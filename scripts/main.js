@@ -2,6 +2,13 @@ document.addEventListener('DOMContentLoaded', loadGestures);
 
 const gestures = JSON.parse(localStorage.getItem('gestures')) || [];
 const predefinedGestures = ['Wave', 'Push', 'Squeeze', 'Point', 'Thumbs Up'];
+const dropdownOptions = `
+    <option value="move_forward">Move Forward</option>
+    <option value="move_backward">Move Backward</option>
+    <option value="turn_left">Turn Left</option>
+    <option value="turn_right">Turn Right</option>
+    <option value="stop">Stop</option>
+`;
 
 if (gestures.length === 0) {
     predefinedGestures.forEach(gestureName => {
@@ -17,14 +24,10 @@ function addGesture() {
         if (!gestures.includes(gestureName)) {
             const gestureList = document.getElementById('gesture-list');
             const li = document.createElement('li');
-            li.innerHTML = `<button class="remove-button" onclick="removeGesture(this)">🗑️</button>
+            li.innerHTML = `<button class="remove-button" onclick="removeGesture(this)">✖️</button>
                 ${gestureName}
                 <select onchange="saveDropdownSelection('${gestureName}', this.value)">
-                    <option value="move_forward">Move Forward</option>
-                    <option value="move_backward">Move Backward</option>
-                    <option value="turn_left">Turn Left</option>
-                    <option value="turn_right">Turn Right</option>
-                    <option value="stop">Stop</option>
+                    ${dropdownOptions}
                 </select>
                 <button onclick="recordData('${gestureName}')">Record Data</button>
                 <span class="sample-count" id="sample-count-${gestureName}">Loading...</span>`;
@@ -54,14 +57,10 @@ function loadGestures() {
 
     gestures.forEach(gestureName => {
         const li = document.createElement('li');
-        li.innerHTML = `<button class="remove-button" onclick="removeGesture(this)">🗑️</button>
+        li.innerHTML = `<button class="remove-button" onclick="removeGesture(this)">✖️</button>
             ${gestureName}
             <select onchange="saveDropdownSelection('${gestureName}', this.value)">
-                <option value="move_forward">Move Forward</option>
-                <option value="move_backward">Move Backward</option>
-                <option value="turn_left">Turn Left</option>
-                <option value="turn_right">Turn Right</option>
-                <option value="stop">Stop</option>
+                ${dropdownOptions}
             </select>
             <button onclick="recordData('${gestureName}')">Record Data</button>
             <span class="sample-count" id="sample-count-${gestureName}">Loading...</span>`;
@@ -75,15 +74,11 @@ function loadGestures() {
 
     storedGestures.forEach(gestureName => {
         const li = document.createElement('li');
-        li.innerHTML = `<button class="remove-button" onclick="removeStoredGesture(this)">🗑️</button>
+        li.innerHTML = `<button class="remove-button" onclick="removeStoredGesture(this)">✖️</button>
             <button class="add-back-button" onclick="addBackGesture(this)">➕</button>
             ${gestureName}
             <select onchange="saveDropdownSelection('${gestureName}', this.value)">
-                <option value="move_forward">Move Forward</option>
-                <option value="move_backward">Move Backward</option>
-                <option value="turn_left">Turn Left</option>
-                <option value="turn_right">Turn Right</option>
-                <option value="stop">Stop</option>
+                ${dropdownOptions}
             </select>
             <button onclick="recordData('${gestureName}')">Record Data</button>
             <span class="sample-count" id="sample-count-${gestureName}">Loading...</span>`;
@@ -112,15 +107,11 @@ function removeGesture(button) {
 
     const storedGestureList = document.getElementById('stored-gesture-list');
     const storedLi = document.createElement('li');
-    storedLi.innerHTML = `<button class="remove-button" onclick="removeStoredGesture(this)">🗑️</button>
+    storedLi.innerHTML = `<button class="remove-button" onclick="removeStoredGesture(this)">✖️</button>
         <button class="add-back-button" onclick="addBackGesture(this)">➕</button>
         ${gestureName}
         <select onchange="saveDropdownSelection('${gestureName}', this.value)">
-            <option value="move_forward">Move Forward</option>
-            <option value="move_backward">Move Backward</option>
-            <option value="turn_left">Turn Left</option>
-            <option value="turn_right">Turn Right</option>
-            <option value="stop">Stop</option>
+            ${dropdownOptions}
         </select>
         <button onclick="recordData('${gestureName}')">Record Data</button>
         <span class="sample-count" id="sample-count-${gestureName}">Loading...</span>`;
@@ -181,14 +172,10 @@ function addBackGesture(button) {
 
         const gestureList = document.getElementById('gesture-list');
         const newLi = document.createElement('li');
-        newLi.innerHTML = `<button class="remove-button" onclick="removeGesture(this)">🗑️</button>
+        newLi.innerHTML = `<button class="remove-button" onclick="removeGesture(this)">✖️</button>
                 ${gestureName}
                 <select onchange="saveDropdownSelection('${gestureName}', this.value)">
-                    <option value="move_forward">Move Forward</option>
-                    <option value="move_backward">Move Backward</option>
-                    <option value="turn_left">Turn Left</option>
-                    <option value="turn_right">Turn Right</option>
-                    <option value="stop">Stop</option>
+                    ${dropdownOptions}
                 </select>
                 <button onclick="recordData('${gestureName}')">Record Data</button>
                 <span class="sample-count" id="sample-count-${gestureName}">Loading...</span>`;
@@ -235,9 +222,9 @@ function updateSampleCount(gestureName) {
         .then(data => {
             const sampleCountElement = document.getElementById(`sample-count-${gestureName}`);
             if (data.status === "failed") {
-                sampleCountElement.textContent = "Samples: 0";
+                sampleCountElement.innerHTML = "<strong>0 samples</strong>";
             } else {
-                sampleCountElement.textContent = `Samples: ${data.number_of_samples}`;
+                sampleCountElement.innerHTML = `<strong>${data.number_of_samples} samples</strong>`;
             }
         })
         .catch(error => {

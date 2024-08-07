@@ -1,11 +1,39 @@
 html {
-    background: linear-gradient(#1ad7c8, rgb(31, 47, 215));
+    background: linear-gradient(#007BFF, black);
     min-height: 100%;
     position: relative;
 }
-h1 {
-    font-family : 'Trebuchet MS', sans-serif
+.header-container {
+    position: relative;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center items horizontally */
 }
+
+h1 {
+    font-family: Verdana, sans-serif;
+    color: white;
+    font-size: 40px;
+    margin: 0; /* Remove auto margin to align with logo */
+    display: inline-block; /* Ensure h1 is inline with other elements */
+    text-align: center;
+    position: absolute; /* Position h1 absolutely */
+    left: 50%; /* Move h1 to the center */
+    transform: translateX(-50%); /* Center h1 exactly */
+    margin-top: 20px;
+}
+
+.logo {
+    margin-top: 20px; /* Add margin around the logo to create space from the edges */
+    margin-left: 20px;
+    margin-right: 0px;
+    height: 50px;
+    padding: 0px; /* Add padding to the logo */
+    display: inline-block; /* Ensure logo stays inline with other elements */
+    position: relative; /* Ensure the logo is positioned relative to its container */
+}
+
 * {
     font-family : 'Lucida Sans', Arial, sans-serif;
 }
@@ -77,15 +105,8 @@ input[type="text"] {
     margin-bottom: 10px; /* Reduced space between search box and add button */
 }
 
-h1 {
-    color: #02448a;
-    font-size : 42px;
-    text-align: center;
-    margin-bottom: 0px; /* Reduced space under h1 */
-}
-
 button[onclick*="removeGesture"], button[onclick*="removeStoredGesture"] {
-    background-color: rgba(255, 0, 0, 0.518);
+    background-color: rgb(253, 73, 73);
     padding: 7px 10px;
     font-size: 12px;
     margin-right: 5px;
@@ -94,7 +115,7 @@ button[onclick*="removeGesture"] {
     margin-right: 10px;
 }
 button[onclick*="addBackGesture"] {
-    background-color: greenyellow;
+    background-color: rgb(54, 255, 47);
     padding: 7px 10px;
     font-size: 12px;
     margin-right: 10px;
@@ -106,4 +127,11 @@ button[onclick*="addBackGesture"] {
 
 #gesture-accuracy-list li {
     font-size: 14px;
+}
+
+button[onclick*="recordData"] {
+    margin-right: 10px; /* Added space between the record data button and the sample count */
+}
+.sample-count {
+    color: #007BFF;
 }
