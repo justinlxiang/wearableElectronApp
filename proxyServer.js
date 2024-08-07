@@ -61,6 +61,24 @@ app.delete('/delete_gesture', async (req, res) => {
     }
 });
 
+app.post('/train_model', async (req, res) => {
+    console.log('Received request to /train_model with body:', req.body);
+    try {
+        const response = await fetch('http://localhost:5000/train_model', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(req.body)
+        });
+        const data = await response.json();
+        console.log('Response from target server:', data);
+        res.json(data);
+    } catch (error) {
+        console.error('Error fetching from target server:', error);
+        res.status(500).json({ error: 'Failed to fetch from target server' });
+    }
+});
 
 
 app.listen(PORT, () => {

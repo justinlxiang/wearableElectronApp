@@ -3,13 +3,17 @@ import threading
 import time
 import pandas as pd
 import os
+import pickle
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, f1_score, classification_report
 import mindrove
 from mindrove.board_shim import BoardShim, MindRoveInputParams, BoardIds
 from mindrove.data_filter import DataFilter, FilterTypes, AggOperations, NoiseTypes
 import numpy as np
 from scipy.signal import butter, lfilter
 from wifi import Cell, Scheme
-from db import init_db, add_gesture, add_gesture_sample, get_gesture_by_name, get_samples_for_gesture, increment_count, delete_gesture_by_name
+from db import init_db, add_gesture, add_gesture_sample, get_gesture_by_name, get_samples_for_gesture, increment_count, delete_gesture_by_name, get_file_paths_for_gesture
 
 def butter_bandpass(lowcut, highcut, fs, order=4):
     nyq = 0.5 * fs
@@ -184,7 +188,7 @@ def start_collection():
     add_gesture_sample(gesture_obj.id, file_name)
     increment_count(gesture_obj)
 
-    demo_df = pd.DataFrame(np.zeros((1000, 14)))  # Create a DataFrame with 1000 rows and 14 columns of zeros
+    demo_df = pd.DataFrame(np.zeros((1000)))  # Create a DataFrame with 1000 rows and 14 columns of zeros
     demo_df.to_csv(file_name, index=False)  # Save the DataFrame without row indices
     
     # threading.Thread(target=collect_data, args=(gesture)).start()
@@ -209,6 +213,61 @@ def delete_gesture():
         return jsonify({"status": "success", "message": f"Gesture '{gesture_name}' deleted successfully"})
     else:
         return jsonify({"status": "failed", "message": f"Gesture '{gesture_name}' not found"}), 404
+    
+
+@app.route('/train_model', methods=['POST'])
+def train_model():
+    gestures = request.json.get('gestures')
+    if not gestures:
+        return jsonify({"status": "failed", "message": "Gestures are required"}), 400
+
+    X = []
+    y = []
+
+    for gesture in gestures:
+        file_paths = get_file_paths_for_gesture(gesture)
+        for file_path in file_paths:
+            data = pd.read_csv(file_path)
+            X.append(data.values.flatten())
+            y.append(gestures.index(gesture))
+
+    if not X or not y:
+        return jsonify({"status": "failed", "message": "No data available for training"}), 400
+
+    X = np.array(X)
+    y = np.array(y)
+
+    try:
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y)
+    except ValueError as e:
+        if "The test_size" in str(e):
+            return jsonify({"status": "failed", "message": "Not enough data available for training"}), 400
+        else:
+            raise e
+
+    model = RandomForestClassifier()
+    model.fit(X_train, y_train)
+
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred, average='weighted')
+    class_report = classification_report(y_test, y_pred, output_dict=True)
+
+    model_to_save = RandomForestClassifier()
+    model_to_save.fit(X_train, y_train)
+
+    if not os.path.exists('static/models'):
+        os.makedirs('static/models')
+    model_path = os.path.join('static', 'models', 'gesture_recognition_model.pkl')
+    with open(model_path, 'wb') as model_file:
+        pickle.dump(model_to_save, model_file)
+
+    return jsonify({
+        "status": "success",
+        "accuracy": accuracy,
+        "f1_score": f1,
+        "report": class_report
+    })
 
 
 if __name__ == "__main__":

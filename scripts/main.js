@@ -246,3 +246,51 @@ function updateSampleCount(gestureName) {
             sampleCountElement.textContent = "Error loading samples";
         });
 }
+
+function trainModel() {
+    const gestures = JSON.parse(localStorage.getItem('gestures')) || [];
+    if (gestures.length === 0) {
+        console.error('No gestures available for training');
+        return;
+    }
+
+    fetch('http://localhost:3000/train_model', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ gestures: gestures })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "success") {
+            console.log('Model trained successfully');
+            console.log('Accuracy:', data.accuracy);
+            console.log('F1 Score:', data.f1_score);
+            console.log('Report:', data.report);
+            // Update the model accuracy percentage on index.html
+            const accuracyElement = document.getElementById('model-accuracy');
+            if (accuracyElement) {
+                const accuracyPercentage = (data.accuracy * 100).toFixed(2);
+                accuracyElement.textContent = `Current Model Accuracy: ${accuracyPercentage}%`;
+                localStorage.setItem('modelAccuracy', accuracyPercentage);
+            }
+        } else {
+            console.error('Failed to train model:', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error training model:', error);
+    });
+}
+
+// Retrieve and display the model accuracy from local storage on page load
+document.addEventListener('DOMContentLoaded', () => {
+    const accuracyElement = document.getElementById('model-accuracy');
+    if (accuracyElement) {
+        const storedAccuracy = localStorage.getItem('modelAccuracy');
+        if (storedAccuracy) {
+            accuracyElement.textContent = `Current Model Accuracy: ${storedAccuracy}%`;
+        }
+    }
+});
