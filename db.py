@@ -110,7 +110,12 @@ def increment_count(gesture_obj):
     gesture_obj.number_of_samples += 1
     db.session.commit()
 
-
-
-
+def get_file_paths_for_gesture(gesture_name):
+    """
+    Get a list of file paths for all samples of a particular gesture.
+    """
+    gesture = Gesture.query.filter_by(name=gesture_name).first()
+    if gesture:
+        return [sample.file_path for sample in GestureSample.query.filter_by(gesture_id=gesture.id).all()]
+    return []
 
