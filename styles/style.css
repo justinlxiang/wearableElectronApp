@@ -1,8 +1,15 @@
 html {
-    background: linear-gradient(#00ffea, rgb(31, 47, 215));
+    background: linear-gradient(#1ad7c8, rgb(31, 47, 215));
     min-height: 100%;
     position: relative;
 }
+h1 {
+    font-family : 'Trebuchet MS', sans-serif
+}
+* {
+    font-family : 'Lucida Sans', Arial, sans-serif;
+}
+
   
 body {
     font-family: Arial, sans-serif;
@@ -71,10 +78,10 @@ input[type="text"] {
 }
 
 h1 {
-    font-size : 40px;
+    color: #02448a;
+    font-size : 42px;
     text-align: center;
     margin-bottom: 0px; /* Reduced space under h1 */
-    text-decoration: underline;
 }
 
 button[onclick*="removeGesture"], button[onclick*="removeStoredGesture"] {
