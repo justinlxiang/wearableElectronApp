@@ -1,0 +1,91 @@
+html {
+    background: linear-gradient(#00ffea, rgb(31, 47, 215));
+}
+  
+body {
+    font-family: Arial, sans-serif;
+    /* background-color: #f0f0f0; */
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+section {
+    max-width: 800px;
+    margin: 20px auto; /* Reduced space between sections */
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    margin-top : 5px;
+    color : #007BFF;
+}
+
+h3 {
+    color: #007BFF;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    margin-bottom: 20px;
+    font-size: 18px;
+}
+
+select {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-right: 10px;
+}
+
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007BFF;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+input[type="text"] {
+    padding: 10px;
+    border-radius: 5px;
+    border: 2px solid #ccc;
+    width: calc(100% - 22px);
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-size : 40px;
+    text-align: center;
+    margin-bottom: 0px; /* Reduced space under h1 */
+    text-decoration: underline;
+}
+
+button[onclick*="removeGesture"], button[onclick*="removeStoredGesture"] {
+    background-color: rgba(255, 0, 0, 0.518);
+    padding: 7px 10px;
+    font-size: 12px;
+    margin-right: 5px;
+}
+button[onclick*="removeGesture"] {
+    margin-right: 10px;
+}
+button[onclick*="addBackGesture"] {
+    background-color: greenyellow;
+    padding: 7px 10px;
+    font-size: 12px;
+    margin-right: 10px;
+}

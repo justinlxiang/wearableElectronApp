@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="images/favicon.png">
+    <title>MindRove Robot Control</title>
+    <link rel="stylesheet" href="styles/style.css">
+    <script src="scripts/main.js"></script>
+</head>
+<body>
+    <h1>MindRove Robot Control Center</h1>
+    <section>
+        <h2>Gestures</h2>
+        <ul id="gesture-list">
+            <!-- Handled by main.js-->
+        </ul>
+
+        <h3>Define a New Gesture</h3>
+        <input type="text" id="new-gesture" placeholder="Gesture Name">
+        <button onclick="addGesture()">Add Gesture</button>
+    </section>
+
+    <section>
+        <h2>Saved Gestures</h2>
+        <ul id="stored-gesture-list">
+            <!-- Handled by main.js-->
+        </ul>
+    </section>
+
+    <!-- New Section for Gesture Recognition Model -->
+    <section>
+        <h2>Gesture Recognition Model</h2>
+        <h3>Data Points for each Gesture</h3>
+        <ul id="data-points-per-class-list">
+            <!-- Dynamically generated list items -->
+        </ul>
+        <p>Current Accuracy: <span id="model-accuracy">0%</span></p>
+    <button onclick="trainModel()">Train Model</button>
+    <button onclick="setModelInUse()">Use Model</button>
+    </section>
+
+</body>
