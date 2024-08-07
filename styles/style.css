@@ -1,5 +1,7 @@
 html {
     background: linear-gradient(#00ffea, rgb(31, 47, 215));
+    min-height: 100%;
+    position: relative;
 }
   
 body {
@@ -26,6 +28,7 @@ h2 {
 
 h3 {
     color: #007BFF;
+    margin-bottom: 5px; /* Reduced space between h3 and the search box */
 }
 
 ul {
@@ -64,7 +67,7 @@ input[type="text"] {
     border-radius: 5px;
     border: 2px solid #ccc;
     width: calc(100% - 22px);
-    margin-bottom: 20px;
+    margin-bottom: 10px; /* Reduced space between search box and add button */
 }
 
 h1 {
@@ -88,4 +91,12 @@ button[onclick*="addBackGesture"] {
     padding: 7px 10px;
     font-size: 12px;
     margin-right: 10px;
+}
+
+#gesture-accuracy-list {
+    padding-left: 20px;
+}
+
+#gesture-accuracy-list li {
+    font-size: 14px;
 }

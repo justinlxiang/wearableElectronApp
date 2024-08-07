@@ -270,10 +270,28 @@ function trainModel() {
             console.log('Report:', data.report);
             // Update the model accuracy percentage on index.html
             const accuracyElement = document.getElementById('model-accuracy');
+            const f1Element = document.getElementById('model-f1-score');
             if (accuracyElement) {
                 const accuracyPercentage = (data.accuracy * 100).toFixed(2);
-                accuracyElement.textContent = `Current Model Accuracy: ${accuracyPercentage}%`;
+                const f1Score = (data.f1_score * 100).toFixed(2);
+                accuracyElement.textContent = `Latest Accuracy: ${accuracyPercentage}%`;
+                f1Element.textContent = `Latest F1 Score: ${f1Score}%`
                 localStorage.setItem('modelAccuracy', accuracyPercentage);
+                localStorage.setItem('modelF1Score', f1Score);
+
+                const gestureAccuracyList = document.getElementById('gesture-accuracy-list');
+                gestureAccuracyList.innerHTML = ''; // Clear previous list
+                const gestureAccuracies = [];
+                for (const [gesture, metrics] of Object.entries(data.report)) {
+                    if (metrics.hasOwnProperty('precision') && metrics.hasOwnProperty('recall') && gesture !== 'macro avg' && gesture !== 'weighted avg') { // Only process gesture classes
+                        const accuracy = ((metrics.precision + metrics.recall) / 2 * 100).toFixed(2);
+                        const listItem = document.createElement('li');
+                        listItem.textContent = `${gesture} accuracy: ${accuracy}%`;
+                        gestureAccuracyList.appendChild(listItem);
+                        gestureAccuracies.push({ gesture, accuracy });
+                    }
+                }
+                localStorage.setItem('gestureAccuracies', JSON.stringify(gestureAccuracies));
             }
         } else {
             console.error('Failed to train model:', data.message);
@@ -287,10 +305,24 @@ function trainModel() {
 // Retrieve and display the model accuracy from local storage on page load
 document.addEventListener('DOMContentLoaded', () => {
     const accuracyElement = document.getElementById('model-accuracy');
+    const f1Element = document.getElementById('model-f1-score');
     if (accuracyElement) {
         const storedAccuracy = localStorage.getItem('modelAccuracy');
-        if (storedAccuracy) {
-            accuracyElement.textContent = `Current Model Accuracy: ${storedAccuracy}%`;
+        const storedF1Score = localStorage.getItem('modelF1Score');
+        if (storedAccuracy && storedF1Score) {
+            accuracyElement.textContent = `Latest Accuracy: ${storedAccuracy}%`
+            f1Element.textContent = `Latest F1 Score: ${storedF1Score}%`;
         }
+    }
+
+    const gestureAccuracyList = document.getElementById('gesture-accuracy-list');
+    if (gestureAccuracyList) {
+        const storedGestureAccuracies = JSON.parse(localStorage.getItem('gestureAccuracies')) || [];
+        gestureAccuracyList.innerHTML = ''; // Clear previous list
+        storedGestureAccuracies.forEach(({ gesture, accuracy }) => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${gesture} accuracy: ${accuracy}%`;
+            gestureAccuracyList.appendChild(listItem);
+        });
     }
 });

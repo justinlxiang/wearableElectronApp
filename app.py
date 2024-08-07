@@ -238,7 +238,7 @@ def train_model():
         for file_path in file_paths:
             data = pd.read_csv(file_path)
             X.append(data.values.flatten())
-            y.append(gestures.index(gesture))
+            y.append((gesture))
 
     if not X or not y:
         return jsonify({"status": "failed", "message": "No data available for training"}), 400
