@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', loadGestures);
 
-
 const gestures = JSON.parse(localStorage.getItem('gestures')) || [];
 const predefinedGestures = ['Wave', 'Push', 'Squeeze', 'Point', 'Thumbs Up'];
 
@@ -27,11 +26,13 @@ function addGesture() {
                     <option value="turn_right">Turn Right</option>
                     <option value="stop">Stop</option>
                 </select>
-                <button onclick="recordData('${gestureName}')">Record Data</button>`;
+                <button onclick="recordData('${gestureName}')">Record Data</button>
+                <span class="sample-count" id="sample-count-${gestureName}">Loading...</span>`;
             gestureList.appendChild(li);
 
             saveGesture(gestureName);
             saveDropdownSelection(gestureName, li.querySelector('select').value);
+            updateSampleCount(gestureName);
         }
     }
 }
@@ -62,12 +63,14 @@ function loadGestures() {
                 <option value="turn_right">Turn Right</option>
                 <option value="stop">Stop</option>
             </select>
-            <button onclick="recordData('${gestureName}')">Record Data</button>`;
+            <button onclick="recordData('${gestureName}')">Record Data</button>
+            <span class="sample-count" id="sample-count-${gestureName}">Loading...</span>`;
         gestureList.appendChild(li);
 
         if (dropdownSelections[gestureName]) {
             li.querySelector('select').value = dropdownSelections[gestureName];
         }
+        updateSampleCount(gestureName);
     });
 
     storedGestures.forEach(gestureName => {
@@ -82,13 +85,16 @@ function loadGestures() {
                 <option value="turn_right">Turn Right</option>
                 <option value="stop">Stop</option>
             </select>
-            <button onclick="recordData('${gestureName}')">Record Data</button>`;
+            <button onclick="recordData('${gestureName}')">Record Data</button>
+            <span class="sample-count" id="sample-count-${gestureName}">Loading...</span>`;
         storedGestureList.appendChild(li);
 
         if (dropdownSelections[gestureName]) {
             li.querySelector('select').value = dropdownSelections[gestureName];
         }
-    });}
+        updateSampleCount(gestureName);
+    });
+}
 
 function removeGesture(button) {
     const li = button.parentElement;
@@ -116,7 +122,8 @@ function removeGesture(button) {
             <option value="turn_right">Turn Right</option>
             <option value="stop">Stop</option>
         </select>
-        <button onclick="recordData('${gestureName}')">Record Data</button>`;
+        <button onclick="recordData('${gestureName}')">Record Data</button>
+        <span class="sample-count" id="sample-count-${gestureName}">Loading...</span>`;
     storedGestureList.appendChild(storedLi);
 
     if (dropdownSelections[gestureName]) {
@@ -126,6 +133,7 @@ function removeGesture(button) {
     let storedGestures = JSON.parse(localStorage.getItem('storedGestures')) || [];
     storedGestures.push(gestureName);
     localStorage.setItem('storedGestures', JSON.stringify(storedGestures));
+    updateSampleCount(gestureName);
 }
 
 function removeStoredGesture(button) {
@@ -136,6 +144,26 @@ function removeStoredGesture(button) {
     let storedGestures = JSON.parse(localStorage.getItem('storedGestures')) || [];
     storedGestures = storedGestures.filter(gesture => gesture !== gestureName);
     localStorage.setItem('storedGestures', JSON.stringify(storedGestures));
+    
+    fetch('http://localhost:3000/delete_gesture', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ gesture: gestureName })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Response from delete_gesture API:', data);
+        if (data.status === 'success') {
+            console.log(`Gesture '${gestureName}' deleted successfully from the database.`);
+        } else {
+            console.error(`Failed to delete gesture '${gestureName}' from the database:`, data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting gesture from the database:', error);
+    });
 }
 
 function addBackGesture(button) {
@@ -162,7 +190,8 @@ function addBackGesture(button) {
                     <option value="turn_right">Turn Right</option>
                     <option value="stop">Stop</option>
                 </select>
-                <button onclick="recordData('${gestureName}')">Record Data</button>`;
+                <button onclick="recordData('${gestureName}')">Record Data</button>
+                <span class="sample-count" id="sample-count-${gestureName}">Loading...</span>`;
         gestureList.appendChild(newLi);
 
         if (dropdownSelections[gestureName]) {
@@ -174,6 +203,7 @@ function addBackGesture(button) {
         // Remove the gesture from storedGestures
         storedGestures = storedGestures.filter(gesture => gesture !== gestureName);
         localStorage.setItem('storedGestures', JSON.stringify(storedGestures));
+        updateSampleCount(gestureName);
     }
 }
 
@@ -193,4 +223,26 @@ function recordData(gestureName) {
         body: JSON.stringify({ gesture: gestureName })
     })
     .then(response => response.json())
+    .then(() => {
+        updateSampleCount(gestureName); // Ensure the sample count is updated after recording data
+    });
+}
+
+function updateSampleCount(gestureName) {
+    console.log(`Sending request to http://localhost:3000/samples/${gestureName}`)
+    fetch(`http://localhost:3000/samples/${gestureName}`)
+        .then(response => response.json())
+        .then(data => {
+            const sampleCountElement = document.getElementById(`sample-count-${gestureName}`);
+            if (data.status === "failed") {
+                sampleCountElement.textContent = "Samples: 0";
+            } else {
+                sampleCountElement.textContent = `Samples: ${data.number_of_samples}`;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching sample count:', error);
+            const sampleCountElement = document.getElementById(`sample-count-${gestureName}`);
+            sampleCountElement.textContent = "Error loading samples";
+        });
 }

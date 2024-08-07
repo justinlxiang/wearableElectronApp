@@ -9,7 +9,7 @@ from mindrove.data_filter import DataFilter, FilterTypes, AggOperations, NoiseTy
 import numpy as np
 from scipy.signal import butter, lfilter
 from wifi import Cell, Scheme
-from db import init_db, add_gesture, add_gesture_sample, get_gesture_by_name, get_samples_for_gesture, increment_count
+from db import init_db, add_gesture, add_gesture_sample, get_gesture_by_name, get_samples_for_gesture, increment_count, delete_gesture_by_name
 
 def butter_bandpass(lowcut, highcut, fs, order=4):
     nyq = 0.5 * fs
@@ -198,6 +198,18 @@ def get_samples(gesture):
         return jsonify({"gesture": gesture, "number_of_samples": len(samples)})
     else:
         return jsonify({"status": "failed", "message": "Gesture not found"}), 404
+    
+@app.route('/delete_gesture', methods=['DELETE'])
+def delete_gesture():
+    gesture_name = request.json.get('gesture')
+    if not gesture_name:
+        return jsonify({"status": "failed", "message": "Gesture name is required"}), 400
+
+    if delete_gesture_by_name(gesture_name):
+        return jsonify({"status": "success", "message": f"Gesture '{gesture_name}' deleted successfully"})
+    else:
+        return jsonify({"status": "failed", "message": f"Gesture '{gesture_name}' not found"}), 404
+
 
 if __name__ == "__main__":
     app.run(debug=True)

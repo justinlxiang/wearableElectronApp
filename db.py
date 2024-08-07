@@ -119,3 +119,17 @@ def get_file_paths_for_gesture(gesture_name):
         return [sample.file_path for sample in GestureSample.query.filter_by(gesture_id=gesture.id).all()]
     return []
 
+def delete_gesture_by_name(name):
+    """
+    Delete a gesture and all its associated samples by name.
+    """
+    gesture = Gesture.query.filter_by(name=name).first()
+    if gesture:
+        # Delete all associated samples
+        GestureSample.query.filter_by(gesture_id=gesture.id).delete()
+        # Delete the gesture itself
+        db.session.delete(gesture)
+        db.session.commit()
+        return True
+    return False
+
