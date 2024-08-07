@@ -209,6 +209,15 @@ def delete_gesture():
     if not gesture_name:
         return jsonify({"status": "failed", "message": "Gesture name is required"}), 400
 
+    gesture_folder = os.path.join('static', 'data', gesture_name)
+    if os.path.exists(gesture_folder) and os.path.isdir(gesture_folder):
+        for root, dirs, files in os.walk(gesture_folder, topdown=False):
+            for name in files:
+                os.remove(os.path.join(root, name))
+            for name in dirs:
+                os.rmdir(os.path.join(root, name))
+        os.rmdir(gesture_folder)
+
     if delete_gesture_by_name(gesture_name):
         return jsonify({"status": "success", "message": f"Gesture '{gesture_name}' deleted successfully"})
     else:
