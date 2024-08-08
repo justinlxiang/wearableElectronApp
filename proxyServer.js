@@ -163,10 +163,9 @@ app.get('/download_model', async (req, res) => {
     console.log('Received request to /download_model');
     try {
         const response = await fetch('http://localhost:5000/download_model');
-        const blob = await response.blob();
-        const buffer = await blob.arrayBuffer();
-        res.setHeader('Content-Disposition', 'attachment; filename=gesture_recognition_model.pkl');
-        res.send(Buffer.from(buffer));
+        const data = await response.json();
+        console.log('Response from target server:', data);
+        res.json(data);
     } catch (error) {
         console.error('Error downloading model from target server:', error);
         res.status(500).json({ error: 'Failed to download model from target server' });

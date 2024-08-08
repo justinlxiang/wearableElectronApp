@@ -317,6 +317,8 @@ function trainModel() {
                 localStorage.setItem('gestureAccuracies', JSON.stringify(gestureAccuracies));
             }
         } else {
+            // Display error message on the frontend
+            alert(`Error: ${data.message}`);
             console.error('Failed to train model:', data.message);
         }
     })

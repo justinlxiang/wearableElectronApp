@@ -13,6 +13,7 @@ from mindrove.data_filter import DataFilter, FilterTypes, AggOperations, NoiseTy
 import numpy as np
 from scipy.signal import butter, lfilter
 from wifi import Cell, Scheme
+import shutil
 from db import init_db, add_gesture, add_gesture_sample, get_all_gestures, get_gesture_by_name
 from db import get_samples_for_gesture, increment_count, change_count, delete_gesture_by_name, get_file_paths_for_gesture
 
@@ -262,7 +263,10 @@ def train_model():
             data = pd.read_csv(file_path)
             X.append(data.values.flatten())
             y.append((gesture))
-
+    # Check if all input arrays in X have the same shape
+    input_shapes = [x.shape for x in X]
+    if len(set(input_shapes)) != 1:
+        return jsonify({"status": "failed", "message": "Inconsistent input shapes in training data"}), 400
     if not X or not y:
         return jsonify({"status": "failed", "message": "No data available for training"}), 400
 
@@ -272,7 +276,7 @@ def train_model():
     try:
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y)
     except ValueError as e:
-        if "The test_size" in str(e):
+        if "too few" in str(e):
             return jsonify({"status": "failed", "message": "Not enough data available for training"}), 400
         else:
             raise e
@@ -337,20 +341,27 @@ def upload_feature_data():
         while os.path.exists(file_name):
             counter += 1
             file_name = f"static/data/{gesture}/{counter}.csv"
-        file_path = os.path.join(gesture_dir, file_name)
-        file.save(file_path)
-        add_gesture_sample(gesture_id=gesture_obj.id, file_path=file_path)
+        file.save(file_name)
+        add_gesture_sample(gesture_id=gesture_obj.id, file_path=file_name)
 
     return jsonify({"status": "success", "message": "Files uploaded successfully"}), 200
 
 @app.route('/download_model', methods=['GET'])
 def download_model():
     try:
-        model_path = 'gesture_recognition_model.pckl'
+        model_path = os.path.join(os.getcwd(), 'static', 'models', 'gesture_recognition_model.pkl')
+        
         if os.path.exists(model_path):
-            return send_file(model_path, as_attachment=True)
+            downloads_folder = os.path.join(os.path.expanduser('~'), 'Downloads')
+            if not os.path.exists(downloads_folder):
+                os.makedirs(downloads_folder)
+            destination_path = os.path.join(downloads_folder, 'gesture_recognition_model.pkl')
+            if os.path.exists(destination_path):
+                os.remove(destination_path)
+            shutil.copyfile(model_path, destination_path)
+            return jsonify({"status": "success", "message": "Model downloaded successfully"}), 200
         else:
-            return jsonify({"status": "failed", "message": "Model file not found"}), 404
+            return jsonify({"status": "failed", "message": f"Model file not found at path {model_path}"}), 404
     except Exception as e:
         return jsonify({"status": "failed", "message": str(e)}), 500
 

@@ -1,5 +1,5 @@
 {
-  "type" : "module",
+  "type": "module",
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.19.2",
@@ -13,12 +13,26 @@
   "main": "main.js",
   "devDependencies": {
     "concurrently": "^8.2.2",
-    "electron": "^31.3.1"
+    "electron": "^31.3.1",
+    "electron-builder": "^24.13.3"
   },
   "scripts": {
-    "start": "concurrently \"python app.py\" \"node proxyServer.js\" \"npm run electron\"",
+    "start": "concurrently --prefix \"[{name}]\" --names \"PYTHON,PROXY,ELECTRON\" \"python app.py\" \"node proxyServer.js\" \"npm run electron\"",
     "electron": "electron .",
+    "build": "electron-builder",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "build": {
+    "appId": "com.example.wearableui",
+    "mac": {
+      "category": "public.app-category.utilities"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
   },
   "repository": {
     "type": "git",
