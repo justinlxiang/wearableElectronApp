@@ -1,9 +1,10 @@
-import express from 'express';
-import cors from 'cors';
-import bodyParser from 'body-parser';
-import fetch from 'node-fetch';
-import { FormData, File } from 'formdata-node';
-import multer from 'multer';
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const { FormData, File } = require('formdata-node');
+const multer = require('multer');
+
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 const app = express();
 const PORT = 3000; // You can use any port you prefer

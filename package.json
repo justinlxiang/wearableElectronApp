@@ -1,6 +1,7 @@
 {
   "type": "commonjs",
   "dependencies": {
+    "asar": "^3.2.0",
     "cors": "^2.8.5",
     "electron-squirrel-startup": "^1.0.1",
     "express": "^4.19.2",
@@ -13,24 +14,16 @@
   "version": "1.0.0",
   "main": "main.js",
   "devDependencies": {
-    "@electron-forge/cli": "^7.4.0",
-    "@electron-forge/maker-deb": "^7.4.0",
-    "@electron-forge/maker-rpm": "^7.4.0",
-    "@electron-forge/maker-squirrel": "^7.4.0",
-    "@electron-forge/maker-zip": "^7.4.0",
-    "@electron-forge/plugin-auto-unpack-natives": "^7.4.0",
-    "@electron-forge/plugin-fuses": "^7.4.0",
-    "@electron/fuses": "^1.8.0",
     "concurrently": "^8.2.2",
-    "electron": "^31.3.1"
+    "electron": "^31.3.1",
+    "electron-builder": "^24.13.3"
   },
   "scripts": {
-    "start": "electron-forge start",
+    "start": "npm run electron",
+    "start-dev": "npm run electron",
     "electron": "electron .",
     "build": "electron-builder",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "package": "electron-forge package",
-    "make": "electron-forge make"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "build": {
     "appId": "com.example.wearableui",
@@ -42,7 +35,36 @@
     },
     "linux": {
       "target": "AppImage"
-    }
+    },
+    "files": [
+      "main.js",
+      "app.py",
+      "db.py",
+      "index.html",
+      "proxyServer.js",
+      "public/**/*",
+      "node_modules/**/*",
+      "package.json",
+      "images/**/*",
+      "instance/**/*",
+      "scripts/**/*",
+      "static/**/*",
+      "styles/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "app.py",
+        "to": "./app.py"
+      },
+      {
+        "from": "proxyServer.js",
+        "to": "./proxyServer.js"
+      },
+      {
+        "from": "db.py",
+        "to": "./db.py"
+      }
+    ]
   },
   "repository": {
     "type": "git",
