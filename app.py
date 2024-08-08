@@ -217,6 +217,9 @@ def add_new_gesture():
 
     # Add the new gesture with 0 samples
     gesture_id = add_gesture(gesture_name, 0)
+    gesture_folder = os.path.join('static', 'data', gesture_name)
+    if not os.path.exists(gesture_folder):
+        os.makedirs(gesture_folder)
     if gesture_id:
         return jsonify({"status": "success", "message": f"Gesture '{gesture_name}' added successfully", "gesture_id": gesture_id})
     else:
@@ -327,14 +330,14 @@ def upload_feature_data():
         os.makedirs(gesture_dir)
 
     # Ensure the file name is unique
-        counter = 1
+    counter = 1
         
     for file in files:
         file_name = f"static/data/{gesture}/{counter}.csv"
         while os.path.exists(file_name):
             counter += 1
             file_name = f"static/data/{gesture}/{counter}.csv"
-        file_path = os.path.join(gesture_dir, file.filename)
+        file_path = os.path.join(gesture_dir, file_name)
         file.save(file_path)
         add_gesture_sample(gesture_id=gesture_obj.id, file_path=file_path)
 

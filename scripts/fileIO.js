@@ -5,14 +5,9 @@ function uploadFeatureData() {
             if (data.status === 'success') {
                 const gestures = data.gestures;
 
-                // Fetch stored gestures
-                const storedGestures = JSON.parse(localStorage.getItem('storedGestures')) || [];
-                const allGestures = [...new Set([...gestures, ...storedGestures])]; // Combine and remove duplicates
-
                 const gestureDropdown = document.createElement('select');
                 gestureDropdown.id = 'gestureDropdown';
-                gestureDropdown.innerHTML = allGestures.map(gesture => `<option value="${gesture}">${gesture}</option>`).join('');
-                
+                gestureDropdown.innerHTML = gestures.map(gesture => `<option value="${gesture}">${gesture}</option>`).join('');
                 const label = document.createElement('label');
                 label.htmlFor = 'gestureDropdown';
                 label.innerText = 'Select a gesture: ';
@@ -68,6 +63,22 @@ function uploadFeatureData() {
                             const result = await response.json();
                             if (result.status === 'success') {
                                 alert("Files uploaded successfully.");
+                                // Update the sample count on the page
+                                fetch(`http://localhost:3000/samples/${selectedGesture}`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        const sampleCountElement = document.getElementById(`sample-count-${selectedGesture}`);
+                                        if (sampleCountElement) {
+                                            sampleCountElement.innerHTML = `<strong>${data.number_of_samples} samples</strong>`;
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error('Error fetching sample count:', error);
+                                        const sampleCountElement = document.getElementById(`sample-count-${selectedGesture}`);
+                                        if (sampleCountElement) {
+                                            sampleCountElement.textContent = "Error loading samples";
+                                        }
+                                    });
                             } else {
                                 alert("Failed to upload files: " + result.message);
                             }

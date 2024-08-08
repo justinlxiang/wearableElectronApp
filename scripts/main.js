@@ -13,34 +13,51 @@ const dropdownOptions = `
 if (gestures.length === 0) {
     predefinedGestures.forEach(gestureName => {
         gestures.push(gestureName);
+        fetch('http://localhost:3000/add_gesture', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ gesture: gestureName })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                console.log(`Gesture '${gestureName}' added successfully to the backend.`);
+            } else {
+                console.error(`Failed to add gesture to the backend: ${data.message}`);
+            }
+        })
+        .catch(error => {
+            console.error('Error adding gesture to the backend:', error);
+        });
     });
     localStorage.setItem('gestures', JSON.stringify(gestures));
 }
 
 function addGesture() {
     const gestureName = document.getElementById('new-gesture').value;
-
+    fetch('http://localhost:3000/add_gesture', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ gesture: gestureName })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            console.log(`Gesture '${gestureName}' added successfully.`);
+        } else {
+            console.error(`Failed to add gesture: ${data.message}`);
+        }
+    })
+    .catch(error => {
+        console.error('Error adding gesture:', error);
+    });
     if (gestureName) {
         let gestures = JSON.parse(localStorage.getItem('gestures')) || [];
         if (!gestures.includes(gestureName)) {
-            fetch('http://localhost:3000/add_gesture', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ gesture: gestureName })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    console.log(`Gesture '${gestureName}' added successfully.`);
-                } else {
-                    console.error(`Failed to add gesture: ${data.message}`);
-                }
-            })
-            .catch(error => {
-                console.error('Error adding gesture:', error);
-            });
             const gestureList = document.getElementById('gesture-list');
             const li = document.createElement('li');
             li.innerHTML = `<button class="remove-button" onclick="removeGesture(this)">✖️</button>
