@@ -7,6 +7,7 @@
     <title>MindRove Robot Control</title>
     <link rel="stylesheet" href="styles/style.css">
     <script src="scripts/main.js"></script>
+    <script src="scripts/fileIO.js"></script>
 </head>
 <body>
     <div>
@@ -22,6 +23,7 @@
         <h3>Define a New Gesture</h3>
         <input type="text" id="new-gesture" placeholder="Gesture Name">
         <button onclick="addGesture()">Add Gesture</button>
+        <button onclick="uploadFeatureData()">Upload Feature Data</button>
     </section>
 
     <section>
@@ -40,7 +42,7 @@
             <!-- Handled by main.js-->
         </ul>
     <button onclick="trainModel()">Train Model</button>
-    <button onclick="setModelInUse()">Use Model</button>
+    <button onclick="downloadModel()">Download Model</button>
     </section>
 
 </body>

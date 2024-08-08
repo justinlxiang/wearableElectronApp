@@ -110,6 +110,13 @@ def increment_count(gesture_obj):
     gesture_obj.number_of_samples += 1
     db.session.commit()
 
+def change_count(gesture_obj, change : int):
+    """
+    Increment the count of number of samples for the given gesture object.
+    """
+    gesture_obj.number_of_samples += change
+    db.session.commit()
+
 def get_file_paths_for_gesture(gesture_name):
     """
     Get a list of file paths for all samples of a particular gesture.

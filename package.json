@@ -8,10 +8,12 @@
   "version": "1.0.0",
   "main": "main.js",
   "devDependencies": {
+    "concurrently": "^8.2.2",
     "electron": "^31.3.1"
   },
   "scripts": {
-    "start": "electron .",
+    "start": "concurrently \"python app.py\" \"node proxyServer.js\" \"npm run electron\"",
+    "electron": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

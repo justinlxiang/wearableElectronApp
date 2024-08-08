@@ -9,6 +9,39 @@ const PORT = 3000; // You can use any port you prefer
 app.use(cors());
 app.use(bodyParser.json());
 
+app.get('/gestures', async (req, res) => {
+    console.log('Received request to /gestures');
+    try {
+        const response = await fetch('http://localhost:5000/gestures');
+        const data = await response.json();
+        console.log('Response from target server:', data);
+        res.json(data);
+    } catch (error) {
+        console.error('Error fetching gestures from target server:', error);
+        res.status(500).json({ error: 'Failed to fetch gestures from target server' });
+    }
+});
+
+app.post('/add_gesture', async (req, res) => {
+    console.log('Received request to /add_gesture with body:', req.body);
+    try {
+        const response = await fetch('http://localhost:5000/add_gesture', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(req.body)
+        });
+        const data = await response.json();
+        console.log('Response from target server:', data);
+        res.json(data);
+    } catch (error) {
+        console.error('Error fetching from target server:', error);
+        res.status(500).json({ error: 'Failed to fetch from target server' });
+    }
+});
+
+
 app.post('/start', async (req, res) => {
     console.log('Received request to /start with body:', req.body);
     try {
@@ -77,6 +110,42 @@ app.post('/train_model', async (req, res) => {
     } catch (error) {
         console.error('Error fetching from target server:', error);
         res.status(500).json({ error: 'Failed to fetch from target server' });
+    }
+});
+
+app.post('/upload_feature_data', async (req, res) => {
+    console.log('Received request to /upload_feature_data');
+    try {
+        const formData = new FormData();
+        formData.append('gesture', req.body.gesture);
+        req.files.forEach(file => {
+            formData.append('files', file.buffer, file.originalname);
+        });
+
+        const response = await fetch('http://localhost:5000/upload_feature_data', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+        console.log('Response from target server:', data);
+        res.json(data);
+    } catch (error) {
+        console.error('Error uploading feature data to target server:', error);
+        res.status(500).json({ error: 'Failed to upload feature data to target server' });
+    }
+});
+
+app.get('/download_model', async (req, res) => {
+    console.log('Received request to /download_model');
+    try {
+        const response = await fetch('http://localhost:5000/download_model');
+        const blob = await response.blob();
+        const buffer = await blob.arrayBuffer();
+        res.setHeader('Content-Disposition', 'attachment; filename=gesture_recognition_model.pkl');
+        res.send(Buffer.from(buffer));
+    } catch (error) {
+        console.error('Error downloading model from target server:', error);
+        res.status(500).json({ error: 'Failed to download model from target server' });
     }
 });
 

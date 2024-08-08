@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 import threading
 import time
 import pandas as pd
@@ -13,7 +13,8 @@ from mindrove.data_filter import DataFilter, FilterTypes, AggOperations, NoiseTy
 import numpy as np
 from scipy.signal import butter, lfilter
 from wifi import Cell, Scheme
-from db import init_db, add_gesture, add_gesture_sample, get_gesture_by_name, get_samples_for_gesture, increment_count, delete_gesture_by_name, get_file_paths_for_gesture
+from db import init_db, add_gesture, add_gesture_sample, get_all_gestures, get_gesture_by_name
+from db import get_samples_for_gesture, increment_count, change_count, delete_gesture_by_name, get_file_paths_for_gesture
 
 def butter_bandpass(lowcut, highcut, fs, order=4):
     nyq = 0.5 * fs
@@ -203,6 +204,25 @@ def get_samples(gesture):
     else:
         return jsonify({"status": "failed", "message": "Gesture not found"}), 404
     
+@app.route('/add_gesture', methods=['POST'])
+def add_new_gesture():
+    gesture_name = request.json.get('gesture')
+    if not gesture_name:
+        return jsonify({"status": "failed", "message": "Gesture name is required"}), 400
+
+    # Check if the gesture already exists
+    existing_gesture = get_gesture_by_name(gesture_name)
+    if existing_gesture:
+        return jsonify({"status": "failed", "message": "Gesture already exists"}), 400
+
+    # Add the new gesture with 0 samples
+    gesture_id = add_gesture(gesture_name, 0)
+    if gesture_id:
+        return jsonify({"status": "success", "message": f"Gesture '{gesture_name}' added successfully", "gesture_id": gesture_id})
+    else:
+        return jsonify({"status": "failed", "message": "Failed to add gesture"}), 500
+
+    
 @app.route('/delete_gesture', methods=['DELETE'])
 def delete_gesture():
     gesture_name = request.json.get('gesture')
@@ -277,6 +297,59 @@ def train_model():
         "f1_score": f1,
         "report": class_report
     })
+
+@app.route('/gestures', methods=['GET'])
+def get_gestures():
+    try:
+        gesture_names = [gesture.name for gesture in get_all_gestures()]
+        return jsonify({"status": "success", "gestures": gesture_names}), 200
+    except Exception as e:
+        return jsonify({"status": "failed", "message": str(e)}), 500
+    
+
+@app.route('/upload_feature_data', methods=['POST'])
+def upload_feature_data():
+    """
+    Upload a number of files to the gesture folder and uploads its count and adds the samples to the table.
+    Requires the gesture already be defined in the gesture table.
+    """
+    if 'gesture' not in request.form or 'files' not in request.files:
+        return jsonify({"status": "failed", "message": "Gesture name and files are required"}), 400
+
+    gesture = request.form['gesture']
+    files = request.files.getlist('files')
+    gesture_obj = get_gesture_by_name(gesture)
+
+    change_count(gesture_obj, len(files))
+
+    gesture_dir = os.path.join('static', 'data', gesture)
+    if not os.path.exists(gesture_dir):
+        os.makedirs(gesture_dir)
+
+    # Ensure the file name is unique
+        counter = 1
+        
+    for file in files:
+        file_name = f"static/data/{gesture}/{counter}.csv"
+        while os.path.exists(file_name):
+            counter += 1
+            file_name = f"static/data/{gesture}/{counter}.csv"
+        file_path = os.path.join(gesture_dir, file.filename)
+        file.save(file_path)
+        add_gesture_sample(gesture_id=gesture_obj.id, file_path=file_path)
+
+    return jsonify({"status": "success", "message": "Files uploaded successfully"}), 200
+
+@app.route('/download_model', methods=['GET'])
+def download_model():
+    try:
+        model_path = 'gesture_recognition_model.pckl'
+        if os.path.exists(model_path):
+            return send_file(model_path, as_attachment=True)
+        else:
+            return jsonify({"status": "failed", "message": "Model file not found"}), 404
+    except Exception as e:
+        return jsonify({"status": "failed", "message": str(e)}), 500
 
 
 if __name__ == "__main__":
