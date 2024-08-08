@@ -1,7 +1,8 @@
 {
-  "type": "module",
+  "type": "commonjs",
   "dependencies": {
     "cors": "^2.8.5",
+    "electron-squirrel-startup": "^1.0.1",
     "express": "^4.19.2",
     "form-data": "^4.0.0",
     "formdata-node": "^6.0.3",
@@ -12,15 +13,24 @@
   "version": "1.0.0",
   "main": "main.js",
   "devDependencies": {
+    "@electron-forge/cli": "^7.4.0",
+    "@electron-forge/maker-deb": "^7.4.0",
+    "@electron-forge/maker-rpm": "^7.4.0",
+    "@electron-forge/maker-squirrel": "^7.4.0",
+    "@electron-forge/maker-zip": "^7.4.0",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.4.0",
+    "@electron-forge/plugin-fuses": "^7.4.0",
+    "@electron/fuses": "^1.8.0",
     "concurrently": "^8.2.2",
-    "electron": "^31.3.1",
-    "electron-builder": "^24.13.3"
+    "electron": "^31.3.1"
   },
   "scripts": {
-    "start": "concurrently --prefix \"[{name}]\" --names \"PYTHON,PROXY,ELECTRON\" \"python app.py\" \"node proxyServer.js\" \"npm run electron\"",
+    "start": "electron-forge start",
     "electron": "electron .",
     "build": "electron-builder",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
   },
   "build": {
     "appId": "com.example.wearableui",
