@@ -4,6 +4,7 @@ import threading
 import time
 import pandas as pd
 import os
+import sys
 import pickle
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
@@ -88,16 +89,10 @@ def connect_to_wifi(ssid, password):
     print(f"Could not find network {ssid}")
     return False
 
-app = Flask(__name__)
-CORS(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///gestures.db'
-app.config["SQLALCHEMY_ECHO"] = True
-init_db(app)
-
 def collect_data(gesture):
     print(gesture)
-    if not os.path.exists("static/data/"+gesture):
-        os.makedirs("static/data/"+gesture)
+    if not os.path.exists(os.path.join(user_data_path, "static/data/"+gesture)):
+        os.makedirs(os.path.join(user_data_path, "static/data/"+gesture))
 
     BoardShim.enable_dev_board_logger()
     params = MindRoveInputParams()
@@ -141,10 +136,10 @@ def collect_data(gesture):
         
         # Ensure the file name is unique
         counter = 1
-        file_name = f"static/data/{gesture}/{counter}.csv"
+        file_name = os.path.join(user_data_path, f"static/data/{gesture}/{counter}.csv")
         while os.path.exists(file_name):
             counter += 1
-            file_name = f"static/data/{gesture}/{counter}.csv"
+            file_name = os.path.join(user_data_path, f"static/data/{gesture}/{counter}.csv")
         
         features.to_csv(file_name, index=False)
         print(f'Data saved to {file_name}')
@@ -166,6 +161,25 @@ def collect_data(gesture):
     # else:
     #     print(f"Failed to reconnect to original WiFi: {original_ssid}")
 
+def get_database_uri(user_data_path):
+    db_path = os.path.join(user_data_path, 'gesture.db')
+    return 'sqlite:///' + db_path
+
+app = Flask(__name__)
+CORS(app)
+app.config["SQLALCHEMY_ECHO"] = True
+if len(sys.argv) > 1:
+    user_data_path = sys.argv[1]
+    app.config['USER_DATA_PATH'] = user_data_path
+    print(f"User data path set to: {user_data_path}")
+else:
+    print("Usage: python script.py <user_data_path>")
+    sys.exit(1)
+
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///gestures.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = get_database_uri(user_data_path)
+init_db(app)
+
 @app.route('/api/start', methods=['POST'])
 def start_collection():
     global collecting_data
@@ -174,15 +188,15 @@ def start_collection():
     # if not connect_to_wifi("MindRove_ARB_3d9bec", "#mindrove"):
     #     return jsonify({"status": "failed", "message": "Could not connect to WiFi"}), 400
     
-    if not os.path.exists("static/data/"+gesture):
-        os.makedirs("static/data/"+gesture)
+    if not os.path.exists(os.path.join(user_data_path, "static/data/"+gesture)):
+        os.makedirs(os.path.join(user_data_path, "static/data/"+gesture))
     
     # Save a blank CSV to the specified path
     counter = 1
-    file_name = f"static/data/{gesture}/{counter}.csv"
+    file_name = os.path.join(user_data_path, f"static/data/{gesture}/{counter}.csv")
     while os.path.exists(file_name):
         counter += 1
-        file_name = f"static/data/{gesture}/{counter}.csv"
+        file_name = os.path.join(user_data_path, f"static/data/{gesture}/{counter}.csv")
 
     # Add gesture sample to the database
     gesture_obj = get_gesture_by_name(gesture)
@@ -220,7 +234,7 @@ def add_new_gesture():
 
     # Add the new gesture with 0 samples
     gesture_id = add_gesture(gesture_name, 0)
-    gesture_folder = os.path.join('static', 'data', gesture_name)
+    gesture_folder = os.path.join(user_data_path, 'static', 'data', gesture_name)
     if not os.path.exists(gesture_folder):
         os.makedirs(gesture_folder)
     if gesture_id:
@@ -235,7 +249,7 @@ def delete_gesture():
     if not gesture_name:
         return jsonify({"status": "failed", "message": "Gesture name is required"}), 400
 
-    gesture_folder = os.path.join('static', 'data', gesture_name)
+    gesture_folder = os.path.join(user_data_path, 'static', 'data', gesture_name)
     if os.path.exists(gesture_folder) and os.path.isdir(gesture_folder):
         for root, dirs, files in os.walk(gesture_folder, topdown=False):
             for name in files:
@@ -294,9 +308,9 @@ def train_model():
     model_to_save = RandomForestClassifier()
     model_to_save.fit(X_train, y_train)
 
-    if not os.path.exists('static/models'):
-        os.makedirs('static/models')
-    model_path = os.path.join('static', 'models', 'gesture_recognition_model.pkl')
+    if not os.path.exists(os.path.join(user_data_path, 'static/models')):
+        os.makedirs(os.path.join(user_data_path, 'static/models'))
+    model_path = os.path.join(user_data_path, 'static', 'models', 'gesture_recognition_model.pkl')
     with open(model_path, 'wb') as model_file:
         pickle.dump(model_to_save, model_file)
 
@@ -331,7 +345,7 @@ def upload_feature_data():
 
     change_count(gesture_obj, len(files))
 
-    gesture_dir = os.path.join('static', 'data', gesture)
+    gesture_dir = os.path.join(user_data_path, 'static', 'data', gesture)
     if not os.path.exists(gesture_dir):
         os.makedirs(gesture_dir)
 
@@ -339,10 +353,10 @@ def upload_feature_data():
     counter = 1
         
     for file in files:
-        file_name = f"static/data/{gesture}/{counter}.csv"
+        file_name = os.path.join(user_data_path, f"static/data/{gesture}/{counter}.csv")
         while os.path.exists(file_name):
             counter += 1
-            file_name = f"static/data/{gesture}/{counter}.csv"
+            file_name = os.path.join(user_data_path, f"static/data/{gesture}/{counter}.csv")
         file.save(file_name)
         add_gesture_sample(gesture_id=gesture_obj.id, file_path=file_name)
 
@@ -351,7 +365,7 @@ def upload_feature_data():
 @app.route('/api/download_model', methods=['GET'])
 def download_model():
     try:
-        model_path = os.path.join(os.getcwd(), 'static', 'models', 'gesture_recognition_model.pkl')
+        model_path = os.path.join(user_data_path, 'static', 'models', 'gesture_recognition_model.pkl')
         
         if os.path.exists(model_path):
             downloads_folder = os.path.join(os.path.expanduser('~'), 'Downloads')

@@ -1,7 +1,6 @@
 const { app, BrowserWindow } = require('electron');
-const { exec, spawn } = require('child_process'); // Add spawn here
-var child = require('child_process').execFile;
-
+const { exec, spawn, execFile } = require('child_process'); // Add spawn here
+const fs = require('fs');
 const path = require('path');
 
 let mainWindow; // Add a global reference to the main window
@@ -23,36 +22,28 @@ function createWindow () {
 }
 
 app.whenReady().then(() => {  
-  // child(path.join(__dirname, '../bin/pyApp'), function(err, data){
-  //   if(err){
-  //     console.log(err);
-  //     return;
-  //   }
-  //   console.log(data.toString());
-  // });
+  const userDataPath = app.getPath('userData');
   const pythonExecutable = path.join(__dirname, '../bin/pyApp');
-  let pythonProcess;
-  try {
-    pythonProcess = spawn(pythonExecutable);
-  } catch (error) {
-    console.error(`Failed to spawn Python process: ${error}`);
-  }
+  const pythonProcess = spawn(pythonExecutable, [userDataPath]);
+
+  const logFilePath = '/Users/juxiang/error_log.txt';
 
   pythonProcess.stdout.on('data', (data) => {
-    console.log(`stdout: ${data}`);
+    const stdoutMessage = `Python stdout: ${data}\n`;
+    fs.appendFileSync(logFilePath, stdoutMessage);
   });
 
   pythonProcess.stderr.on('data', (data) => {
-    console.error(`stderr: ${data}`);
+    const stderrMessage = `Python stderr: ${data}\n`;
+    fs.appendFileSync(logFilePath, stderrMessage);
   });
 
-  pythonProcess.on('close', (code) => {
-    if (code !== 0) {
-      console.error(`Python executable process exited with code ${code}`);
-      if (mainWindow) {
-        mainWindow.close();
-      }
-      app.quit();
+  pythonProcess.on('error', (error) => {
+    const errorMessage = `Python executable process exited with error: ${error.message}\n`;
+    fs.appendFileSync(logFilePath, errorMessage);
+    fs.appendFileSync(logFilePath, `Stack trace:\n${error.stack}\n`);
+    if (mainWindow) {
+      mainWindow.webContents.send('python-error', error.message); // Send error to renderer process
     }
   });
 
@@ -60,16 +51,21 @@ app.whenReady().then(() => {
   const proxyProcess = spawn(proxyExecutable);
 
   proxyProcess.stdout.on('data', (data) => {
-    console.log(`stdout: ${data}`);
+    const stdoutMessage = `Proxy stdout: ${data}\n`;
+    fs.appendFileSync(logFilePath, stdoutMessage);
   });
 
   proxyProcess.stderr.on('data', (data) => {
-    console.error(`stderr: ${data}`);
+    const stderrMessage = `Proxy stderr: ${data}\n`;
+    fs.appendFileSync(logFilePath, stderrMessage);
   });
 
-  proxyProcess.on('close', (code) => {
-    if (code !== 0) {
-      console.error(`Proxy server process exited with code ${code}`);
+  proxyProcess.on('error', (error) => {
+    const errorMessage = `Proxy server process exited with error: ${error.message}\n`;
+    fs.appendFileSync(logFilePath, errorMessage);
+    fs.appendFileSync(logFilePath, `Stack trace:\n${error.stack}\n`);
+    if (mainWindow) {
+      mainWindow.webContents.send('python-error', error.message); // Send error to renderer process
     }
   });
 
