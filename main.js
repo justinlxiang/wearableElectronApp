@@ -31,7 +31,7 @@ app.whenReady().then(() => {
   const pythonExecutable = path.join(__dirname, '/bin/pyApp');
   const pythonProcess = spawn(pythonExecutable, [userDataPath]);
 
-  const logFilePath = '/Users/juxiang/error_log.txt';
+  const logFilePath = path.join(app.getPath('userData'), 'error_log.txt');
 
   pythonProcess.stdout.on('data', (data) => {
     const stdoutMessage = `Python stdout: ${data}\n`;
