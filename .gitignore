@@ -5,3 +5,7 @@
 /static/models/
 out/
 /dist
+/build
+app.spec
+/proxy/node_modules
+/proxy/bin

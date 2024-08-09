@@ -7,6 +7,7 @@
     "express": "^4.19.2",
     "form-data": "^4.0.0",
     "formdata-node": "^6.0.3",
+    "http-proxy-middleware": "^3.0.0",
     "multer": "^1.4.5-lts.1",
     "node-fetch": "^3.3.2"
   },
@@ -20,10 +21,10 @@
   },
   "scripts": {
     "start": "npm run electron",
-    "start-dev": "npm run electron",
     "electron": "electron .",
     "build": "electron-builder",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postbuild": "chmod +x dist/mac-arm64/wearableui.app/Contents/Resources/bin/pyApp && chmod +x dist/mac-arm64/wearableui.app/Contents/Resources/bin/proxyServer"
   },
   "build": {
     "appId": "com.example.wearableui",
@@ -36,33 +37,13 @@
     "linux": {
       "target": "AppImage"
     },
-    "files": [
-      "main.js",
-      "app.py",
-      "db.py",
-      "index.html",
-      "proxyServer.js",
-      "public/**/*",
-      "node_modules/**/*",
-      "package.json",
-      "images/**/*",
-      "instance/**/*",
-      "scripts/**/*",
-      "static/**/*",
-      "styles/**/*"
-    ],
     "extraResources": [
       {
-        "from": "app.py",
-        "to": "./app.py"
-      },
-      {
-        "from": "proxyServer.js",
-        "to": "./proxyServer.js"
-      },
-      {
-        "from": "db.py",
-        "to": "./db.py"
+        "from": "bin/",
+        "to": "bin/",
+        "filter": [
+          "**/*"
+        ]
       }
     ]
   },
@@ -71,11 +52,11 @@
     "url": "git+https://github.com/justinlxiang/wearableRobotUI.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Justin Xiang",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/justinlxiang/wearableRobotUI/issues"
   },
   "homepage": "https://github.com/justinlxiang/wearableRobotUI#readme",
-  "description": ""
+  "description": "Interface for MindRove Gesture customization and model training"
 }

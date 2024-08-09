@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, send_file
+from flask_cors import CORS
 import threading
 import time
 import pandas as pd
@@ -78,7 +79,7 @@ def extract_features(emg_data, imu_data, fs=1000):
 def connect_to_wifi(ssid, password):
     cells = Cell.all('wlan0')
     for cell in cells:
-        if cell.ssid == ssid:
+        if (cell.ssid == ssid):
             scheme = Scheme.for_cell('wlan0', 'home', cell, password)
             scheme.save()
             scheme.activate()
@@ -88,6 +89,7 @@ def connect_to_wifi(ssid, password):
     return False
 
 app = Flask(__name__)
+CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///gestures.db'
 app.config["SQLALCHEMY_ECHO"] = True
 init_db(app)
@@ -164,7 +166,7 @@ def collect_data(gesture):
     # else:
     #     print(f"Failed to reconnect to original WiFi: {original_ssid}")
 
-@app.route('/start', methods=['POST'])
+@app.route('/api/start', methods=['POST'])
 def start_collection():
     global collecting_data
     gesture = request.json.get('gesture')
@@ -196,7 +198,7 @@ def start_collection():
     # threading.Thread(target=collect_data, args=(gesture)).start()
     return jsonify({"status": "started"})
 
-@app.route('/samples/<gesture>', methods=['GET'])
+@app.route('/api/samples/<gesture>', methods=['GET'])
 def get_samples(gesture):
     gesture_obj = get_gesture_by_name(gesture)
     if gesture_obj:
@@ -205,7 +207,7 @@ def get_samples(gesture):
     else:
         return jsonify({"status": "failed", "message": "Gesture not found"}), 404
     
-@app.route('/add_gesture', methods=['POST'])
+@app.route('/api/add_gesture', methods=['POST'])
 def add_new_gesture():
     gesture_name = request.json.get('gesture')
     if not gesture_name:
@@ -227,7 +229,7 @@ def add_new_gesture():
         return jsonify({"status": "failed", "message": "Failed to add gesture"}), 500
 
     
-@app.route('/delete_gesture', methods=['DELETE'])
+@app.route('/api/delete_gesture', methods=['DELETE'])
 def delete_gesture():
     gesture_name = request.json.get('gesture')
     if not gesture_name:
@@ -248,7 +250,7 @@ def delete_gesture():
         return jsonify({"status": "failed", "message": f"Gesture '{gesture_name}' not found"}), 404
     
 
-@app.route('/train_model', methods=['POST'])
+@app.route('/api/train_model', methods=['POST'])
 def train_model():
     gestures = request.json.get('gestures')
     if not gestures:
@@ -305,7 +307,7 @@ def train_model():
         "report": class_report
     })
 
-@app.route('/gestures', methods=['GET'])
+@app.route('/api/gestures', methods=['GET'])
 def get_gestures():
     try:
         gesture_names = [gesture.name for gesture in get_all_gestures()]
@@ -314,7 +316,7 @@ def get_gestures():
         return jsonify({"status": "failed", "message": str(e)}), 500
     
 
-@app.route('/upload_feature_data', methods=['POST'])
+@app.route('/api/upload_feature_data', methods=['POST'])
 def upload_feature_data():
     """
     Upload a number of files to the gesture folder and uploads its count and adds the samples to the table.
@@ -346,7 +348,7 @@ def upload_feature_data():
 
     return jsonify({"status": "success", "message": "Files uploaded successfully"}), 200
 
-@app.route('/download_model', methods=['GET'])
+@app.route('/api/download_model', methods=['GET'])
 def download_model():
     try:
         model_path = os.path.join(os.getcwd(), 'static', 'models', 'gesture_recognition_model.pkl')
