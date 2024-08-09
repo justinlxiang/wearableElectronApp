@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, nativeImage} = require('electron');
 const { exec, spawn, execFile } = require('child_process'); // Add spawn here
 const fs = require('fs');
 const path = require('path');
@@ -22,6 +22,11 @@ function createWindow () {
 }
 
 app.whenReady().then(() => {  
+  const image = nativeImage.createFromPath(
+    app.getAppPath() + "/images/icon.png"
+  );
+  app.dock.setIcon(image);
+
   const userDataPath = app.getPath('userData');
   const pythonExecutable = path.join(__dirname, '../bin/pyApp');
   const pythonProcess = spawn(pythonExecutable, [userDataPath]);
