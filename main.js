@@ -28,7 +28,7 @@ app.whenReady().then(() => {
   app.dock.setIcon(image);
 
   const userDataPath = app.getPath('userData');
-  const pythonExecutable = path.join(__dirname, '/bin/pyApp');
+  const pythonExecutable = path.join(__dirname, '../bin/pyApp');
   const pythonProcess = spawn(pythonExecutable, [userDataPath]);
 
   const logFilePath = path.join(app.getPath('userData'), 'error_log.txt');
@@ -52,7 +52,7 @@ app.whenReady().then(() => {
     }
   });
 
-  const proxyExecutable = path.join(__dirname, '/bin/proxyServer');
+  const proxyExecutable = path.join(__dirname, '../bin/proxyServer');
   const proxyProcess = spawn(proxyExecutable);
 
   proxyProcess.stdout.on('data', (data) => {
@@ -74,13 +74,15 @@ app.whenReady().then(() => {
     }
   });
 
-  createWindow();
   app.on('activate', function () {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
+      if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
+      }
   });
+
+  createWindow();
 });
+ 
 
 function shutdownServers() {
   exec('lsof -ti:5000,3000 | xargs kill -9', (error, stdout, stderr) => {

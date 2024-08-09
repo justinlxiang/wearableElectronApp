@@ -24,8 +24,7 @@
     "start": "npm run electron",
     "electron": "electron .",
     "build": "electron-builder",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "postbuild": "chmod +x dist/mac-arm64/wearableui.app/Contents/Resources/bin/pyApp && chmod +x dist/mac-arm64/wearableui.app/Contents/Resources/bin/proxyServer"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "build": {
     "appId": "com.example.wearableui",
