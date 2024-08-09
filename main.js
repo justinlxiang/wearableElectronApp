@@ -14,7 +14,7 @@ function createWindow () {
   });
 
   mainWindow.loadFile("index.html");
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 
   mainWindow.on('closed', function () {
     mainWindow = null; // Dereference the window object
@@ -28,7 +28,7 @@ app.whenReady().then(() => {
   app.dock.setIcon(image);
 
   const userDataPath = app.getPath('userData');
-  const pythonExecutable = path.join(__dirname, '../bin/pyApp');
+  const pythonExecutable = path.join(__dirname, '/bin/pyApp');
   const pythonProcess = spawn(pythonExecutable, [userDataPath]);
 
   const logFilePath = '/Users/juxiang/error_log.txt';
@@ -52,7 +52,7 @@ app.whenReady().then(() => {
     }
   });
 
-  const proxyExecutable = path.join(__dirname, '../bin/proxyServer');
+  const proxyExecutable = path.join(__dirname, '/bin/proxyServer');
   const proxyProcess = spawn(proxyExecutable);
 
   proxyProcess.stdout.on('data', (data) => {
@@ -75,22 +75,34 @@ app.whenReady().then(() => {
   });
 
   createWindow();
+  app.on('activate', function () {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
 });
+
+function shutdownServers() {
+  exec('lsof -ti:5000,3000 | xargs kill -9', (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Error shutting down servers on port 5000: ${error.message}`);
+      return;
+    }
+    if (stderr) {
+      console.error(`stderr on port 5000: ${stderr}`);
+      return;
+    }
+    console.log(`stdout on port 5000: ${stdout}`);
+  });
+}
 
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') {
-    exec('lsof -ti:5000,3000 | xargs kill -9', (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error shutting down servers on port 5000: ${error.message}`);
-        return;
-      }
-      if (stderr) {
-        console.error(`stderr on port 5000: ${stderr}`);
-        return;
-      }
-      console.log(`stdout on port 5000: ${stdout}`);
-    });
-
+    shutdownServers();
     app.quit();
   }
+});
+
+app.on('quit', function () {
+  shutdownServers();
 });
