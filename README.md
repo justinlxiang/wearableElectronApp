@@ -1,15 +1,12 @@
 # Wearable Gesture Control
 
-Welcome to the Wearable Gesture Control project! This desktop application allows users to customize and train gesture models for controlling various devices using hand gestures.
+This desktop application allows users to customize and train gesture models for controlling various devices using hand gestures.
 
 ## Table of Contents
 - [Introduction](#introduction)
 - [Features](#features)
 - [Installation](#installation)
-- [Usage](#usage)
 - [Project Structure](#project-structure)
-- [Contributing](#contributing)
-- [License](#license)
 
 ## Introduction
 
