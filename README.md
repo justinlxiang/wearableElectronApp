@@ -10,8 +10,6 @@
 
 The Wearable Gesture Control application is designed to provide an intuitive interface for customizing and training gesture models. Users can define new gestures, upload feature data, and train models to recognize these gestures.
 
-<img width="1493" alt="Screenshot 2024-08-11 at 10 16 50 AM" src="https://github.com/user-attachments/assets/752f2ac4-21eb-4c59-8b24-dcc28144d1e3">
-
 ## Features
 
 - Define and add new gestures
