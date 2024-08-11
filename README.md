@@ -1,6 +1,4 @@
-# Wearable Gesture Control
-
-This desktop application allows users to customize and train gesture models for controlling various devices using hand gestures.
+# Wearable Gesture Control Desktop Application
 
 ## Table of Contents
 - [Introduction](#introduction)
