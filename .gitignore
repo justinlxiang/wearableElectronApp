@@ -9,3 +9,5 @@ out/
 app.spec
 /proxy/node_modules
 /proxy/bin
+/venv
+/dist_V1

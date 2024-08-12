@@ -70,7 +70,7 @@ To get started with the Wearable Gesture Control application, follow these steps
 
     - **Build the Python executables:**
         ```sh
-        pyinstaller --onefile app.py db.py
+        pyinstaller --onefile app.py db.py --distpath ./bin/
         ```
 
     Ensure that the generated executables are placed in a /bin folder. You can specify the target architecture using the `--target` option for `pkg` and `--target-arch` option for `pyinstaller`.
