@@ -90,83 +90,73 @@ def connect_to_wifi(ssid, password):
     return False
 
 def collect_data(gesture):
-    print(gesture)
-    if not os.path.exists(os.path.join(user_data_path, "static/data/"+gesture)):
-        os.makedirs(os.path.join(user_data_path, "static/data/"+gesture))
+    with lock:
+        print(gesture)
+        if not os.path.exists(os.path.join(user_data_path, "static/data/"+gesture)):
+            os.makedirs(os.path.join(user_data_path, "static/data/"+gesture))
 
-    BoardShim.enable_dev_board_logger()
-    params = MindRoveInputParams()
-    board_id = BoardIds.MINDROVE_WIFI_BOARD
-    board_shim = BoardShim(board_id, params)
+        BoardShim.enable_dev_board_logger()
+        params = MindRoveInputParams()
+        board_id = BoardIds.MINDROVE_WIFI_BOARD
+        board_shim = BoardShim(board_id, params)
 
-    emg_channels = BoardShim.get_emg_channels(board_id)
-    gyro_channels = BoardShim.get_gyro_channels(board_id)
-    accel_channels = BoardShim.get_accel_channels(board_id)
-    timestamp_channel = BoardShim.get_timestamp_channel(board_id)
-    sampling_rate = BoardShim.get_sampling_rate(board_id)
+        emg_channels = BoardShim.get_emg_channels(board_id)
+        gyro_channels = BoardShim.get_gyro_channels(board_id)
+        accel_channels = BoardShim.get_accel_channels(board_id)
+        timestamp_channel = BoardShim.get_timestamp_channel(board_id)
+        sampling_rate = BoardShim.get_sampling_rate(board_id)
 
-    board_shim.prepare_session()
-    board_shim.start_stream()
+        board_shim.prepare_session()
+        board_shim.start_stream()
 
-    window_size = 2  # seconds
-    num_points = window_size * sampling_rate
+        window_size = 2  # seconds
+        num_points = window_size * sampling_rate
 
-    print(f"Starting data collection for gesture: {gesture}")
-    
-    for i in range(2, 0, -1):
-        print(f"{i}...")
-        time.sleep(1)
-    print("0")
-
-    if board_shim.get_board_data_count() >= num_points:
-        data = board_shim.get_current_board_data(num_points)
-
-        emg_data = data[emg_channels]
-        gyro_data = data[gyro_channels]
-        accel_data = data[accel_channels]
-        timestamp_data = data[timestamp_channel]
-
-        combined_data = np.transpose(np.vstack((emg_data, gyro_data, accel_data, timestamp_data)))
-        combined_df = pd.DataFrame(combined_data, columns=[f'EMG_{i}' for i in range(emg_data.shape[0])] + 
-                                                    [f'Gyro_{i}' for i in range(gyro_data.shape[0])] + 
-                                                    [f'Accel_{i}' for i in range(accel_data.shape[0])] + 
-                                                    ['Timestamp'])
+        print(f"Starting data collection for gesture: {gesture}")
+        print(f"Sampling Rate: {str(sampling_rate)}")
         
-        features = extract_features(combined_df[['EMG_0', 'EMG_1', 'EMG_2']], combined_df[['Gyro_0', 'Gyro_1', 'Gyro_2', 'Accel_0', 'Accel_1', 'Accel_2']], fs=sampling_rate)
-        
-        # Ensure the file name is unique
-        counter = 1
-        file_name = os.path.join(user_data_path, f"static/data/{gesture}/{counter}.csv")
-        while os.path.exists(file_name):
-            counter += 1
+        for i in range(2, 0, -1):
+            print(f"{i}...")
+            time.sleep(1)
+        print("0")
+
+        if board_shim.get_board_data_count() >= num_points:
+            data = board_shim.get_current_board_data(num_points)
+
+            emg_data = data[emg_channels]
+            gyro_data = data[gyro_channels]
+            accel_data = data[accel_channels]
+            timestamp_data = data[timestamp_channel]
+
+            combined_data = np.transpose(np.vstack((emg_data, gyro_data, accel_data, timestamp_data)))
+            combined_df = pd.DataFrame(combined_data, columns=[f'EMG_{i}' for i in range(emg_data.shape[0])] + 
+                                                        [f'Gyro_{i}' for i in range(gyro_data.shape[0])] + 
+                                                        [f'Accel_{i}' for i in range(accel_data.shape[0])] + 
+                                                        ['Timestamp'])
+            
+            features = extract_features(combined_df[['EMG_0', 'EMG_1','EMG_2','EMG_3','EMG_4', 'EMG_5', 'EMG_6','EMG_7']], combined_df[['Gyro_0', 'Gyro_1', 'Gyro_2', 'Accel_0', 'Accel_1', 'Accel_2']])
+            
+            # Ensure the file name is unique
+            counter = 1
             file_name = os.path.join(user_data_path, f"static/data/{gesture}/{counter}.csv")
-        
-        features.to_csv(file_name, index=False)
-        print(f'Data saved to {file_name}')
-        
-        # Add gesture sample to the database
-        gesture_obj = get_gesture_by_name(gesture)
-        if not gesture_obj:
-            gesture_id = add_gesture(gesture, 0)
-            gesture_obj = get_gesture_by_name(gesture)
-        add_gesture_sample(gesture_obj.id, file_name)
-        increment_count(gesture_obj)
+            while os.path.exists(file_name):
+                counter += 1
+                file_name = os.path.join(user_data_path, f"static/data/{gesture}/{counter}.csv")
+            
+            pd.DataFrame(features).to_csv(file_name, index=False)
+            print(f'Data saved to {file_name}')        
 
-    board_shim.stop_stream()
-    board_shim.release_session()
+        board_shim.stop_stream()
+        board_shim.release_session()
 
-    # Switch back to the original WiFi
-    # if connect_to_wifi(original_ssid, original_password):
-    #     print(f"Switched back to original WiFi: {original_ssid}")
-    # else:
-    #     print(f"Failed to reconnect to original WiFi: {original_ssid}")
 
 def get_database_uri(user_data_path):
-    db_path = os.path.join(user_data_path, 'gesture.db')
+    db_path = os.path.join(user_data_path, 'gestures.db')
     return 'sqlite:///' + db_path
 
 app = Flask(__name__)
 CORS(app)
+lock = threading.Lock()
 app.config["SQLALCHEMY_ECHO"] = True
 if len(sys.argv) > 1:
     user_data_path = sys.argv[1]
@@ -184,9 +174,8 @@ init_db(app)
 def start_collection():
     global collecting_data
     gesture = request.json.get('gesture')
-    
-    # if not connect_to_wifi("MindRove_ARB_3d9bec", "#mindrove"):
-    #     return jsonify({"status": "failed", "message": "Could not connect to WiFi"}), 400
+    if not gesture:
+        return jsonify({"status": "failed", "message": "Gesture name is required"}), 400
     
     if not os.path.exists(os.path.join(user_data_path, "static/data/"+gesture)):
         os.makedirs(os.path.join(user_data_path, "static/data/"+gesture))
@@ -198,26 +187,32 @@ def start_collection():
         counter += 1
         file_name = os.path.join(user_data_path, f"static/data/{gesture}/{counter}.csv")
 
-    # Add gesture sample to the database
-    gesture_obj = get_gesture_by_name(gesture)
-    if not gesture_obj:
-        gesture_id = add_gesture(gesture, 0)
-        gesture_obj = get_gesture_by_name(gesture)
-    add_gesture_sample(gesture_obj.id, file_name)
-    increment_count(gesture_obj)
+    #Dummy Data 
+    # # Create a DataFrame with 1000 rows and 14 columns of zeros,  Save the DataFrame without row indices
+    # demo_df = pd.DataFrame(np.zeros((1000)))  
+    # demo_df.to_csv(file_name, index=False)
+    print(gesture)
+    try:
+        collect_data(gesture)
 
-    demo_df = pd.DataFrame(np.zeros((1000)))  # Create a DataFrame with 1000 rows and 14 columns of zeros
-    demo_df.to_csv(file_name, index=False)  # Save the DataFrame without row indices
-    
-    # threading.Thread(target=collect_data, args=(gesture)).start()
-    return jsonify({"status": "started"})
+        # Add gesture sample to the database
+        gesture_obj = get_gesture_by_name(gesture)
+        if not gesture_obj:
+            gesture_id = add_gesture(gesture, 0)
+            gesture_obj = get_gesture_by_name(gesture)
+        add_gesture_sample(gesture_obj.id, file_name)
+        increment_count(gesture_obj)
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return jsonify({"status": "failed", "message": "Failed to add gesture sample to the database"}), 500
+    return jsonify({"status": "started"}), 201
 
 @app.route('/api/samples/<gesture>', methods=['GET'])
 def get_samples(gesture):
     gesture_obj = get_gesture_by_name(gesture)
     if gesture_obj:
         samples = get_samples_for_gesture(gesture_obj.id)
-        return jsonify({"gesture": gesture, "number_of_samples": len(samples)})
+        return jsonify({"gesture": gesture, "number_of_samples": len(samples)}), 200
     else:
         return jsonify({"status": "failed", "message": "Gesture not found"}), 404
     
@@ -238,7 +233,7 @@ def add_new_gesture():
     if not os.path.exists(gesture_folder):
         os.makedirs(gesture_folder)
     if gesture_id:
-        return jsonify({"status": "success", "message": f"Gesture '{gesture_name}' added successfully", "gesture_id": gesture_id})
+        return jsonify({"status": "success", "message": f"Gesture '{gesture_name}' added successfully", "gesture_id": gesture_id}), 201
     else:
         return jsonify({"status": "failed", "message": "Failed to add gesture"}), 500
 
@@ -259,7 +254,7 @@ def delete_gesture():
         os.rmdir(gesture_folder)
 
     if delete_gesture_by_name(gesture_name):
-        return jsonify({"status": "success", "message": f"Gesture '{gesture_name}' deleted successfully"})
+        return jsonify({"status": "success", "message": f"Gesture '{gesture_name}' deleted successfully"}), 200
     else:
         return jsonify({"status": "failed", "message": f"Gesture '{gesture_name}' not found"}), 404
     
@@ -319,7 +314,7 @@ def train_model():
         "accuracy": accuracy,
         "f1_score": f1,
         "report": class_report
-    })
+    }), 200
 
 @app.route('/api/gestures', methods=['GET'])
 def get_gestures():
@@ -360,7 +355,7 @@ def upload_feature_data():
         file.save(file_name)
         add_gesture_sample(gesture_id=gesture_obj.id, file_path=file_name)
 
-    return jsonify({"status": "success", "message": "Files uploaded successfully"}), 200
+    return jsonify({"status": "success", "message": "Files uploaded successfully"}), 201
 
 @app.route('/api/download_model', methods=['GET'])
 def download_model():
@@ -381,6 +376,7 @@ def download_model():
     except Exception as e:
         return jsonify({"status": "failed", "message": str(e)}), 500
 
-
+def main():
+    app.run(debug=True, threaded=True)
 if __name__ == "__main__":
-    app.run(debug=True)
+   main()

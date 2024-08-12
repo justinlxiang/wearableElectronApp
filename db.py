@@ -92,6 +92,7 @@ def add_gesture_sample(gesture_id, file_path):
     sample = GestureSample(gesture_id=gesture_id, file_path=file_path)
     db.session.add(sample)
     db.session.commit()
+    return sample.id
 
 def get_gesture_by_name(name):
     return Gesture.query.filter_by(name=name).first()
@@ -123,7 +124,7 @@ def get_file_paths_for_gesture(gesture_name):
     """
     gesture = Gesture.query.filter_by(name=gesture_name).first()
     if gesture:
-        return [sample.file_path for sample in GestureSample.query.filter_by(gesture_id=gesture.id).all()]
+        return [sample.file_path for sample in gesture.samples]
     return []
 
 def delete_gesture_by_name(name):
