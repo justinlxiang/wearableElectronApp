@@ -190,21 +190,28 @@ def start_collection():
     #Dummy Data 
     demo_df = pd.DataFrame(np.zeros((1000)))  
     demo_df.to_csv(file_name, index=False)
-
-    # try:
-    #     collect_data(gesture)
-
-    #     # Add gesture sample to the database
+    # gesture_obj = get_gesture_by_name(gesture)
+    # if not gesture_obj:
+    #     gesture_id = add_gesture(gesture, 0)
     #     gesture_obj = get_gesture_by_name(gesture)
-    #     if not gesture_obj:
-    #         gesture_id = add_gesture(gesture, 0)
-    #         gesture_obj = get_gesture_by_name(gesture)
-    #     add_gesture_sample(gesture_obj.id, file_name)
-    #     increment_count(gesture_obj)
-    # except Exception as e:
-    #     print(f"An error occurred: {e}")
-    #     return jsonify({"status": "failed", "message": "Failed to add gesture sample to the database"}), 500
+    # add_gesture_sample(gesture_obj.id, file_name)
+    # increment_count(gesture_obj)
     # return jsonify({"status": "started"}), 201
+
+    try:
+        collect_data(gesture)
+
+        # Add gesture sample to the database
+        gesture_obj = get_gesture_by_name(gesture)
+        if not gesture_obj:
+            gesture_id = add_gesture(gesture, 0)
+            gesture_obj = get_gesture_by_name(gesture)
+        add_gesture_sample(gesture_obj.id, file_name)
+        increment_count(gesture_obj)
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return jsonify({"status": "failed", "message": "Failed to add gesture sample to the database"}), 500
+    return jsonify({"status": "started"}), 201
 
 @app.route('/api/samples/<gesture>', methods=['GET'])
 def get_samples(gesture):

@@ -3,7 +3,7 @@
 ## Table of Contents
 - [Introduction](#introduction)
 - [Features](#features)
-- [Installation](#installation)
+- [Building](#building)
 - [Project Structure](#project-structure)
 
 ## Introduction
@@ -30,7 +30,7 @@ Before you begin, ensure you have the following installed on your system:
 - `pyinstaller` (for packaging Python scripts)
 - `pkg` (for packaging Node.js scripts)
 
-## Installation
+## Building Yourself
 
 To get started with the Wearable Gesture Control application, follow these steps:
 
