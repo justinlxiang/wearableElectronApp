@@ -1,9 +1,9 @@
 const { app, BrowserWindow, nativeImage} = require('electron');
-const { exec, spawn, execFile } = require('child_process'); // Add spawn here
+const { exec, spawn} = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-let mainWindow; // Add a global reference to the main window
+let mainWindow;
 function createWindow () {
   mainWindow = new BrowserWindow({
     width: 1500,
