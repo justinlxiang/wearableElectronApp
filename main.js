@@ -28,7 +28,7 @@ app.whenReady().then(() => {
   app.dock.setIcon(image);
 
   const userDataPath = app.getPath('userData');
-  const pythonExecutable = path.join(__dirname, '../bin/app');
+  const pythonExecutable = path.join(__dirname, '../bin/pyApp');
   const pythonProcess = spawn(pythonExecutable, [userDataPath]);
 
   const logFilePath = path.join(app.getPath('userData'), 'error_log.txt');
