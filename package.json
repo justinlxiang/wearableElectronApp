@@ -13,7 +13,7 @@
   },
   "name": "wearableui",
   "productName": "Wearable Gesture Control",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "main": "main.js",
   "devDependencies": {
     "concurrently": "^8.2.2",
@@ -37,6 +37,17 @@
     "linux": {
       "target": "AppImage"
     },
+    "files": [
+      "index.html",
+      "main.js",
+      "scripts/main.js",
+      "styles/style.css",
+      "images/logo.png",
+      "images/background.png",
+      "images/airlab-logo.png",
+      "images/favicon.png",
+      "images/icon.png"
+    ],
     "extraResources": [
       {
         "from": "bin/",

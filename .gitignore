@@ -10,3 +10,5 @@ out/
 /proxy/bin
 /venv
 /dist_V1
+/node_modulesbackup
+/.vscode
