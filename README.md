@@ -59,7 +59,7 @@ To get started with the Wearable Gesture Control application, follow these steps
     npm install -g pkg
     ```
 
-3. **Build the executables:**
+3. **Rebuild the executables (optional):**
 
     To build the Python and proxyServer executables, follow these steps:
 
@@ -87,6 +87,7 @@ To get started with the Wearable Gesture Control application, follow these steps
 - `index.html`: The main HTML file for the application interface.
 - `scripts/main.js`: JavaScript file handling the application logic.
 - `styles/style.css`: CSS file for styling the application.
+- `images/`: Folder containing images for the application.
 - `proxy/proxyServer.js`: Proxy server for handling API requests.
 - `main.js`: Main Electron file for creating the application window and managing processes.
 - `package.json`: Project configuration and dependencies.
