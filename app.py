@@ -187,17 +187,6 @@ def start_collection():
         counter += 1
         file_name = os.path.join(user_data_path, f"static/data/{gesture}/{counter}.csv")
 
-    #Dummy Data 
-    demo_df = pd.DataFrame(np.zeros((1000)))  
-    demo_df.to_csv(file_name, index=False)
-    # gesture_obj = get_gesture_by_name(gesture)
-    # if not gesture_obj:
-    #     gesture_id = add_gesture(gesture, 0)
-    #     gesture_obj = get_gesture_by_name(gesture)
-    # add_gesture_sample(gesture_obj.id, file_name)
-    # increment_count(gesture_obj)
-    # return jsonify({"status": "started"}), 201
-
     try:
         collect_data(gesture)
 
