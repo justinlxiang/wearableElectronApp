@@ -144,7 +144,15 @@ def collect_data(gesture):
                 file_name = os.path.join(user_data_path, f"static/data/{gesture}/{counter}.csv")
             
             pd.DataFrame(features).to_csv(file_name, index=False)
-            print(f'Data saved to {file_name}')        
+            print(f'Data saved to {file_name}')      
+
+            # Add gesture sample to the database
+            gesture_obj = get_gesture_by_name(gesture)
+            if not gesture_obj:
+                gesture_id = add_gesture(gesture, 0)
+                gesture_obj = get_gesture_by_name(gesture)
+            add_gesture_sample(gesture_obj.id, file_name)
+            increment_count(gesture_obj)
 
         board_shim.stop_stream()
         board_shim.release_session()
@@ -179,24 +187,10 @@ def start_collection():
     
     if not os.path.exists(os.path.join(user_data_path, "static/data/"+gesture)):
         os.makedirs(os.path.join(user_data_path, "static/data/"+gesture))
-    
-    # Save a blank CSV to the specified path
-    counter = 1
-    file_name = os.path.join(user_data_path, f"static/data/{gesture}/{counter}.csv")
-    while os.path.exists(file_name):
-        counter += 1
-        file_name = os.path.join(user_data_path, f"static/data/{gesture}/{counter}.csv")
 
     try:
         collect_data(gesture)
 
-        # Add gesture sample to the database
-        gesture_obj = get_gesture_by_name(gesture)
-        if not gesture_obj:
-            gesture_id = add_gesture(gesture, 0)
-            gesture_obj = get_gesture_by_name(gesture)
-        add_gesture_sample(gesture_obj.id, file_name)
-        increment_count(gesture_obj)
     except Exception as e:
         print(f"An error occurred: {e}")
         return jsonify({"status": "failed", "message": "Failed to add gesture sample to the database"}), 500
