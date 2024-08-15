@@ -276,10 +276,8 @@ def train_model():
     try:
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y)
     except ValueError as e:
-        if "too few" in str(e):
-            return jsonify({"status": "failed", "message": "Not enough data available for training"}), 400
-        else:
-            raise e
+        return jsonify({"status": "failed", "message": "Not enough data available for training"}), 400
+
 
     model = RandomForestClassifier()
     model.fit(X_train, y_train)
@@ -290,7 +288,7 @@ def train_model():
     class_report = classification_report(y_test, y_pred, output_dict=True)
 
     model_to_save = RandomForestClassifier()
-    model_to_save.fit(X_train, y_train)
+    model_to_save.fit(X, y)
 
     if not os.path.exists(os.path.join(user_data_path, 'static/models')):
         os.makedirs(os.path.join(user_data_path, 'static/models'))
